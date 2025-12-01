@@ -15,6 +15,12 @@ public class UsuarioService {
 		return usuarioRepository.findAll();
 	}
 	
+	public Usuario autenticar(String email, String senha) {
+        return usuarioRepository
+                .findByEmailAndSenha(email, senha)
+                .orElse(null);
+    }
+	
 	public Usuario buscarPorId(Integer id){
 		return usuarioRepository.findById(id).get();
 	}

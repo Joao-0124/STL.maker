@@ -1,36 +1,40 @@
 package com.maker.solicitacao;
 
 import java.util.List;
+import java.util.Optional;   // 👈 IMPORTANTE
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.maker.usuario.Usuario;
-
 @Service
 public class SolicitacaoService {
-	
-	@Autowired
-	private SolicitacaoRepository solicitacaoRepository;
-	
-	public List<Solicitacao> listarTodas(){
-		return solicitacaoRepository.findAll();
-	}
-	
-	public Solicitacao buscarPorId(Integer id){
-		return solicitacaoRepository.findById(id).get();
-	}
-	
-	public Solicitacao salvar(Solicitacao solicitacao) {
-		return solicitacaoRepository.save(solicitacao);
-	}
-	
-	public void deletar(Integer id) {
-		Solicitacao usuario = solicitacaoRepository.findById(id).get();
-		
-		solicitacaoRepository.delete(usuario);
-	}
-	public Solicitacao atualizarSolicitacaoParcial(Integer id, Solicitacao solicitacaoAtualizado) {
+
+    @Autowired
+    private SolicitacaoRepository solicitacaoRepository;
+
+    public List<Solicitacao> listarTodas() {
+        return solicitacaoRepository.findAll();
+    }
+
+    // agora bate certinho com o controller (Optional)
+    public Optional<Solicitacao> buscarPorId(Integer id) {
+        return solicitacaoRepository.findById(id);
+    }
+
+    public Solicitacao salvar(Solicitacao solicitacao) {
+        return solicitacaoRepository.save(solicitacao);
+    }
+
+    public void deletar(Integer id) {
+        // evita NoSuchElementException e 500 desnecessário
+        if (solicitacaoRepository.existsById(id)) {
+            solicitacaoRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("Solicitacao não encontrada com AUTOID " + id);
+        }
+    }
+
+    public Solicitacao atualizarSolicitacaoParcial(Integer id, Solicitacao solicitacaoAtualizado) {
         Solicitacao solicitacaoExistente = solicitacaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitacao não encontrada com AUTOID " + id));
 
@@ -59,7 +63,9 @@ public class SolicitacaoService {
             solicitacaoExistente.setImpressora_id(solicitacaoAtualizado.getImpressora_id());
         }
         if (solicitacaoAtualizado.getStatus_prioridade_id() != null) {
-            solicitacaoExistente.setStatus_prioridade_id(solicitacaoAtualizado.getStatus_prioridade_id());
+            solicitacaoExistente.setStatus_prioridade_id(
+                    solicitacaoAtualizado.getStatus_prioridade_id()
+            );
         }
 
         return solicitacaoRepository.save(solicitacaoExistente);

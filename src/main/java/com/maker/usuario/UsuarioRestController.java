@@ -12,7 +12,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity; 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
+
+@CrossOrigin(origins = {"http://localhost:8081", "http://192.168.0.48:8081"})
 @RestController
 @RequestMapping(value="/usuario")
 public class UsuarioRestController {
@@ -50,5 +55,22 @@ public class UsuarioRestController {
 	                                       @RequestBody Usuario usuario) {
 	    return usuarioService.atualizarUsuarioParcial(autoid, usuario);
 	}
+	
+	@PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Usuario credenciais) {
+        Usuario usuario = usuarioService.autenticar(
+                credenciais.getEmail(),
+                credenciais.getSenha()
+        );
+
+        if (usuario == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Credenciais inválidas");
+        }
+        
+        usuario.setSenha(null);
+        return ResponseEntity.ok(usuario);
+    }
 
 }
